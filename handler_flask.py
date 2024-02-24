@@ -410,7 +410,7 @@ def process_audio(path, output_path, solver="Midpoint", nfe=64, tau=0.5, denoisi
     return
 
 
-def text_to_speech_with_options(text, enhance=False):
+def text_to_speech_with_options(text, enhance=False, gpu_code=""):
     # Check if text is longer than 300 characters
     if len(text) > 300:
         # Split text into sentences and process each individually
@@ -452,7 +452,7 @@ def text_to_speech_with_options(text, enhance=False):
         final_audio_filename = enhanced_output_filename
         
     # Construct file url
-    file_url = WEB_URL + '/download/' + final_audio_filename
+    file_url = WEB_URL + '/download/' + gpu_code + '-' + final_audio_filename
     file_url = file_url.replace('files_for_download/', '')    # drop this element from the URL
     print('file_url:', file_url)
     
@@ -483,9 +483,10 @@ def handle_request():
     # Extract parameters from job input
     text = job_input.get("text", "")
     enhance = job_input.get("enhance", False)
+    gpu_code = job_input.get("gpu_code", "")
 
     # Call the main function with extracted parameters
-    response = text_to_speech_with_options(text, enhance)
+    response = text_to_speech_with_options(text, enhance, gpu_code)
     
     return response  # JSON object with audio and transcription
 
