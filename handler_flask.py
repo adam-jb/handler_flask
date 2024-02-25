@@ -438,6 +438,7 @@ def text_to_speech_with_options(text, enhance=False, gpu_code=""):
     else:
         # Original processing for shorter texts
         wav = inference(text, ref_her, alpha=0.2, beta=0.7, diffusion_steps=5, embedding_scale=1.1)
+        print('wav.shape prior to enhance:', wav.shape)
 
     
     file_key = str(uuid.uuid4()) + '.wav'
@@ -451,6 +452,8 @@ def text_to_speech_with_options(text, enhance=False, gpu_code=""):
         enhanced_output_filename = 'files_for_download/enhanced_' + file_key
         process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
         final_audio_filename = enhanced_output_filename
+
+    print('wav.shape after enhance:', wav.shape)
         
     # Construct file url
     file_url = WEB_URL + '/download/' + gpu_code + '-' + final_audio_filename
@@ -511,6 +514,7 @@ def stream_generator_text_to_speech_with_options(
         t2 = time.time()
         print(t2 - t1, 'seconds to run inference for char length', len(sentence))
         print('wav.shape prior to enhance:', wav.shape)
+        print(type(wav), 'is wav type')
 
         # Enhance Audio if requested
         if enhance:
@@ -529,6 +533,7 @@ def stream_generator_text_to_speech_with_options(
 
             t2 = time.time()
             print(t2 - t1, 'seconds to enhance for char length', len(sentence))
+            print('sampling rate _sr:', _sr)
             
 
         ## Append to bytes array for streaming
