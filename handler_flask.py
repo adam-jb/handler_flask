@@ -531,6 +531,7 @@ def stream_generator_text_to_speech_with_options(
             
 
         ## Append to bytes array for streaming
+        print('wav.shape prior to converting to bytes:', wav.shape)
         wav_bytes = wav.tobytes()
 
         if bytes_to_stream is not None:
