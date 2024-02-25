@@ -538,6 +538,9 @@ def stream_generator_text_to_speech_with_options(
         else:
             bytes_to_stream = wav_bytes
 
+        print(len(bytes_to_stream), 'bytes_to_stream')
+        print(count_bytes_per_chunk, 'count_bytes_per_chunk')
+
         # yield as bytes: loop until too few bytes for final chunk
         for i in range(0, len(bytes_to_stream), count_bytes_per_chunk):
             
