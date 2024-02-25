@@ -539,6 +539,7 @@ def stream_generator_text_to_speech_with_options(
         
         # If not enhanced ensure is type int16 before converting to bytes
         else:
+            file_key = str(uuid.uuid4()) + '.wav'
             output_filename = 'files_for_download/' + file_key
             sf.write(output_filename, wav, 24000)
             _sr, wav = wavfile.read(output_filename)
