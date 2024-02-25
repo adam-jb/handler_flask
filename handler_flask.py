@@ -539,14 +539,15 @@ def stream_generator_text_to_speech_with_options(
             bytes_to_stream = wav_bytes
 
         # yield as bytes: loop until too few bytes for final chunk
-        for i in range(0, len(data_as_bytes), count_bytes_per_chunk):
+        for i in range(0, len(bytes_to_stream), count_bytes_per_chunk):
             
-            payload_for_yield = data_as_bytes[:count_bytes_per_chunk]
-
-            # drop the bytes being yielded
-            data_as_bytes = data_as_bytes[count_bytes_per_chunk:]
+            payload_for_yield = bytes_to_stream[:count_bytes_per_chunk]
             
             if len(payload_for_yield) == count_bytes_per_chunk:
+
+                # drop the bytes being yielded from front of the list
+                bytes_to_stream = bytes_to_stream[count_bytes_per_chunk:]
+                
                 yield payload_for_yield
     
     # when all sentences are made and yielded: send the remaining chunk of bytes
