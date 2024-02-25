@@ -496,7 +496,7 @@ def stream_generator_text_to_speech_with_options(
     s_prev = None
     bytes_to_stream = None
     for sentence in sentences:
-        if text1.strip() == "":
+        if sentence.strip() == "":
             continue
 
         t1 = time.time()
