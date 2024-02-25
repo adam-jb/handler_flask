@@ -1,4 +1,4 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, send_from_directory, Response
 import boto3
 import uuid
 import asyncio
@@ -556,7 +556,7 @@ def stream_generator_text_to_speech_with_options(
 
 
 @app.route('/api/stream', methods=['POST'])  
-def stream_audio():       
+def stream_audio():
 
     job = request.json
     job_input = job["input"]
