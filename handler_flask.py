@@ -408,7 +408,7 @@ def process_audio(path, output_path, solver="Midpoint", nfe=64, tau=0.5, denoisi
 
     # Save the processed audio to a file
     torchaudio.save(output_path, wav1, new_sr)
-    return
+    return new_sr
 
 
 def text_to_speech_with_options(text, enhance=False, gpu_code=""):
@@ -450,7 +450,7 @@ def text_to_speech_with_options(text, enhance=False, gpu_code=""):
     # Enhance Audio if requested
     if enhance:
         enhanced_output_filename = 'files_for_download/enhanced_' + file_key
-        process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
+        _new_sr = process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
         final_audio_filename = enhanced_output_filename
 
     print('wav.shape after enhance:', wav.shape)
@@ -528,12 +528,13 @@ def stream_generator_text_to_speech_with_options(
             final_audio_filename = output_filename
             
             enhanced_output_filename = 'files_for_download/enhanced_' + file_key
-            process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
+            new_sr = process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
             _sr, wav = wavfile.read(enhanced_output_filename)
+            sample_rate = new_sr
 
             t2 = time.time()
             print(t2 - t1, 'seconds to enhance for char length', len(sentence))
-            print('sampling rate _sr:', _sr)
+            print('sampling rate _sr:', _sr, 'new_sr', new_sr, 'sample_rate', sample_rate)
             
 
         ## Append to bytes array for streaming
