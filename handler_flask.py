@@ -2,6 +2,7 @@ from flask import Flask, request, send_from_directory
 import boto3
 import uuid
 import asyncio
+from scipy.io import wavfile
 
 from tortoise.utils.text import split_and_recombine_text
 
@@ -460,6 +461,120 @@ def text_to_speech_with_options(text, enhance=False, gpu_code=""):
     # Return the URL and transcription data
     response = {"file_url": file_url}
     return response
+
+
+
+
+def stream_generator_text_to_speech_with_options(
+    text, 
+    enhance=False,
+    desired_stream_section_length=100,
+    max_stream_section_length=150
+):
+
+    sample_rate = 24_000
+    count_bytes_per_chunk = 12_000
+
+    # We set count_bytes_per_chunk so each chunk is 1/4 seconds
+    # Multiply by two as each sample is 2 bytes (16 bit integers)
+    # count_bytes_per_chunk = int(samplerate * 2 / 4)
+    
+    # Split into smaller sections than non-streaming
+    if len(text) > max_stream_section_length:
+        
+        # Split text into sentences and process each individually
+        sentences = split_and_recombine_text(
+            text, 
+            desired_length=desired_stream_section_length, 
+            max_length=max_stream_section_length
+        )
+        
+        sentences = [s + '.' for s in sentences]   # add the period back
+    else:
+        sentences = [text]
+        
+    s_prev = None
+    bytes_to_stream = None
+    for sentence in sentences:
+        if text1.strip() == "":
+            continue
+
+        t1 = time.time()
+        wav, s_prev = LFinference(sentence,
+                                  s_prev,
+                                  ref_her,
+                                  alpha=0.2,
+                                  beta=0.9,
+                                  t=0.7,
+                                  diffusion_steps=8, 
+                                  embedding_scale=1.3)
+        t2 = time.time()
+        print(t2 - t1, 'seconds to run inference for char length', len(sentence))
+
+        # Enhance Audio if requested
+        if enhance:
+
+            t1 = time.time()
+            
+            # saving file so can stream out
+            file_key = str(uuid.uuid4()) + '.wav'
+            output_filename = 'files_for_download/' + file_key
+            sf.write(output_filename, wav, 24000)
+            final_audio_filename = output_filename
+            
+            enhanced_output_filename = 'files_for_download/enhanced_' + file_key
+            process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
+            wav, _sr = wavfile.read(enhanced_output_filename)
+
+            t2 = time.time()
+            print(t2 - t1, 'seconds to enhance for char length', len(sentence))
+            
+
+        ## Append to bytes array for streaming
+        wav_bytes = wav.tobytes()
+
+        if bytes_to_stream is not None:
+            bytes_to_stream = bytes_to_stream + wav_bytes
+        else:
+            bytes_to_stream = wav_bytes
+
+        # yield as bytes: loop until too few bytes for final chunk
+        for i in range(0, len(data_as_bytes), count_bytes_per_chunk):
+            
+            payload_for_yield = data_as_bytes[:count_bytes_per_chunk]
+
+            # drop the bytes being yielded
+            data_as_bytes = data_as_bytes[count_bytes_per_chunk:]
+            
+            if len(payload_for_yield) == count_bytes_per_chunk:
+                yield payload_for_yield
+    
+    # when all sentences are made and yielded: send the remaining chunk of bytes
+    yield payload_for_yield
+
+    
+
+
+@app.route('/api/stream', methods=['POST'])  
+def stream_audio():       
+
+    job = request.json
+    job_input = job["input"]
+    print('job_input:', job_input)
+
+    # Extract parameters from job input
+    text = job_input.get("text", "")
+    enhance = job_input.get("enhance", True)
+    desired_stream_section_length = job_input.get("desired_stream_section_length", 100)
+    max_stream_section_length = job_input.get("max_stream_section_length", 150)
+    
+    return Response(
+        stream_generator_text_to_speech_with_options(
+            text, 
+            enhance, 
+            desired_stream_section_length, 
+            max_stream_section_length
+        ), mimetype='audio/wav')  
 
 
 @app.route('/')
