@@ -539,10 +539,16 @@ def stream_generator_text_to_speech_with_options(
         
         # If not enhanced ensure is type int16 before converting to bytes
         else:
+            output_filename = 'files_for_download/' + file_key
+            sf.write(output_filename, wav, 24000)
+            _sr, wav = wavfile.read(output_filename)
+            print('_sr not enhanced:', _sr)
+
+            '''
             print('wav.dtype:', wav.dtype)
             print('np.max(wav), np.min(wav):', np.max(wav), np.min(wav))
             wav = wav.astype(np.float16, casting='unsafe')
-            
+            '''
             
 
         ## Append to bytes array for streaming
