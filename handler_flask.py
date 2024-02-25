@@ -481,6 +481,7 @@ def stream_generator_text_to_speech_with_options(
     # We set count_bytes_per_chunk so each chunk is 1/4 seconds
     # Multiply by two as each sample is 2 bytes (16 bit integers)
     # count_bytes_per_chunk = int(samplerate * 2 / 4)
+    ## Though if enhanced=True there will be more chunks per second as samplerate becomes 44100
     
     # Split into smaller sections than non-streaming
     if len(text) > max_stream_section_length:
@@ -537,20 +538,13 @@ def stream_generator_text_to_speech_with_options(
             print('sampling rate _sr:', _sr, 'new_sr', new_sr, 'sample_rate', sample_rate)
 
         
-        # If not enhanced ensure is type int16 before converting to bytes
+        # If not enhanced write and read again to convert to same sample rate
         else:
             file_key = str(uuid.uuid4()) + '.wav'
             output_filename = 'files_for_download/' + file_key
             sf.write(output_filename, wav, 24000)
             _sr, wav = wavfile.read(output_filename)
             print('_sr not enhanced:', _sr)
-
-            '''
-            print('wav.dtype:', wav.dtype)
-            print('np.max(wav), np.min(wav):', np.max(wav), np.min(wav))
-            wav = wav.astype(np.float16, casting='unsafe')
-            '''
-            
 
         ## Append to bytes array for streaming
         print('wav.shape prior to converting to bytes:', wav.shape)
