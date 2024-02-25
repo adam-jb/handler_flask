@@ -524,7 +524,7 @@ def stream_generator_text_to_speech_with_options(
             
             enhanced_output_filename = 'files_for_download/enhanced_' + file_key
             process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
-            wav, _sr = wavfile.read(enhanced_output_filename)
+            _sr, wav = wavfile.read(enhanced_output_filename)
 
             t2 = time.time()
             print(t2 - t1, 'seconds to enhance for char length', len(sentence))
