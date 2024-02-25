@@ -510,6 +510,7 @@ def stream_generator_text_to_speech_with_options(
                                   embedding_scale=1.3)
         t2 = time.time()
         print(t2 - t1, 'seconds to run inference for char length', len(sentence))
+        print('wav.shape prior to enhance:', wav.shape)
 
         # Enhance Audio if requested
         if enhance:
