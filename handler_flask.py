@@ -535,6 +535,13 @@ def stream_generator_text_to_speech_with_options(
             t2 = time.time()
             print(t2 - t1, 'seconds to enhance for char length', len(sentence))
             print('sampling rate _sr:', _sr, 'new_sr', new_sr, 'sample_rate', sample_rate)
+
+        
+        # If not enhanced ensure is type int16 before converting to bytes
+        else:
+            print('wav.dtype:', wav.dtype)
+            wav = wav.astype(np.int16, casting='safe')
+            
             
 
         ## Append to bytes array for streaming
