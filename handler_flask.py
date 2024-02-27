@@ -609,22 +609,31 @@ def get_gpu_load():
     return {"gpu_load": gpu.load}
 
 
-@app.route('/api', methods = ['POST'])
+
+@app.route('/api', methods=['POST'])
 def handle_request():
+    try:
+        job = request.json
+        if not job:
+            return jsonify({"error": "No JSON data provided"}), 400
 
-    job = request.json
-    job_input = job["input"]
-    print('job_input:', job_input)
+        job_input = job.get("input")
+        if not job_input:
+            return jsonify({"error": "Missing 'input' key in JSON data"}), 400
 
-    # Extract parameters from job input
-    text = job_input.get("text", "")
-    enhance = job_input.get("enhance", False)
-    gpu_code = job_input.get("gpu_code", "")
+        text = job_input.get("text", "")
+        enhance = job_input.get("enhance", False)
+        gpu_code = job_input.get("gpu_code", "")
 
-    # Call the main function with extracted parameters
-    response = text_to_speech_with_options(text, enhance, gpu_code)
-    
-    return response  # JSON object with audio and transcription
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        response = text_to_speech_with_options(text, enhance, gpu_code)
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/download/<file_name>', methods=['GET'])
