@@ -468,6 +468,63 @@ def text_to_speech_with_options(text, enhance=False, gpu_code=""):
 
 
 
+
+def text_to_speech_with_options_return_file(text, enhance=False, gpu_code=""):
+    # Check if text is longer than 300 characters
+    if len(text) > 300:
+        # Split text into sentences and process each individually
+        sentences = split_and_recombine_text(text)
+        wavs = []
+        s_prev = None
+        for text1 in sentences:
+            if text1.strip() == "":
+                continue
+            text1 += '.'  # add the period back
+
+            wav, s_prev = LFinference(text1,
+                                      s_prev,
+                                      ref_her,
+                                      alpha=0.2,
+                                      beta=0.9,
+                                      t=0.7,
+                                      diffusion_steps=8, 
+                                      embedding_scale=1.3)
+            wavs.append(wav)
+        
+        # Concatenate all audio segments
+        wav = np.concatenate(wavs)
+    else:
+        # Original processing for shorter texts
+        wav = inference(text, ref_her, alpha=0.2, beta=0.7, diffusion_steps=5, embedding_scale=1.1)
+        print('wav.shape prior to enhance:', wav.shape)
+
+    
+    file_key = str(uuid.uuid4()) + '.wav'
+    output_filename = 'files_for_download/' + file_key
+    sf.write(output_filename, wav, 24000)
+    final_audio_filename = output_filename
+
+
+    # Enhance Audio if requested
+    if enhance:
+        enhanced_output_filename = 'files_for_download/enhanced_' + file_key
+        _new_sr = process_audio(output_filename, output_path=enhanced_output_filename, denoising=True)
+        final_audio_filename = enhanced_output_filename
+
+    sample_rate, wav = wavfile.read(final_audio_filename)
+    
+
+    # Return the file as bytes
+    wav_bytes = wav.tobytes()
+    response = {
+        "file_bytes": wav.tobytes(),
+        "sample_rate": sample_rate
+    }
+    
+    return response
+
+
+
 def stream_generator_text_to_speech_with_options(
     text, 
     enhance=False,
@@ -633,6 +690,33 @@ def handle_request():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+@app.route('/api_return_file', methods=['POST'])
+def handle_request():
+    try:
+        job = request.json
+        if not job:
+            return jsonify({"error": "No JSON data provided"}), 400
+
+        job_input = job.get("input")
+        if not job_input:
+            return jsonify({"error": "Missing 'input' key in JSON data"}), 400
+
+        text = job_input.get("text", "")
+        enhance = job_input.get("enhance", False)
+        gpu_code = job_input.get("gpu_code", "")
+
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        response = text_to_speech_with_options_return_file(text, enhance, gpu_code)
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 
