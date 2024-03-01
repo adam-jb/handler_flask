@@ -517,9 +517,10 @@ def text_to_speech_with_options_return_file(text, enhance=False, gpu_code=""):
     # Return the file as bytes
     wav_bytes = wav.tobytes()
     response = {
-        "file_bytes": wav.tobytes(),
+        "file_bytes": wav_bytes,
         "sample_rate": sample_rate
     }
+    print('returning response of type', type(response))
     
     return response
 
