@@ -694,7 +694,7 @@ def handle_request():
 
 
 @app.route('/api_return_file', methods=['POST'])
-def handle_request():
+def handle_request_return_file():
     try:
         job = request.json
         if not job:
