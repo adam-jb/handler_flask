@@ -6,6 +6,7 @@ from scipy.io import wavfile
 
 from tortoise.utils.text import split_and_recombine_text
 
+import base64
 
 import os
 
@@ -516,8 +517,9 @@ def text_to_speech_with_options_return_file(text, enhance=False, gpu_code=""):
 
     # Return the file as bytes
     wav_bytes = wav.tobytes()
+    base64_str = base64.b64encode(wav_bytes).decode('utf-8')
     response = {
-        "file_bytes": wav_bytes,
+        "file_str_bytes": base64_str,
         "sample_rate": sample_rate
     }
     print('returning response of type', type(response))
